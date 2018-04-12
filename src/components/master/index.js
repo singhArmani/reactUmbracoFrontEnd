@@ -1,33 +1,31 @@
+//@flow
+
 import React from 'react';
-import PropTypes from 'prop-types';
 
-import { Route,Switch } from 'react-router-dom';
+import { Route, Switch } from 'react-router-dom';
 
-import NotFound from '../../pages/notfound'
+import NotFound from '../../pages/notfound';
 import Contact from '../../pages/contact';
-import Home from '../../pages/home'
-import Header from '../header';
+import Home from '../../pages/home';
+import LoginPage from '../../pages/login';
 import Footer from '../footer';
 
-
 class Master extends React.PureComponent {
-    render() {
-        return (
-            <div>
-               <Header />
-                <Switch>
-                    <Route exact path='/' component={Home} />
-                    <Route path='/contact' component={Contact} />
-                    <Route path='*' component={NotFound} />
-                </Switch>
-                <Footer />
-            </div>
-        );
-    }
+  render() {
+    return (
+      <div>
+        <Switch>
+          <Route exact path="/" component={Home} />
+          <Route exact path="/login" component={LoginPage} />
+          <Route path="/contact" component={Contact} />
+          <Route path="*" component={NotFound} />
+        </Switch>
+        <Footer />
+      </div>
+    );
+  }
 }
 
-Master.propTypes = {
-
-};
+Master.propTypes = {};
 
 export default Master;

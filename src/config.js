@@ -1,3 +1,3 @@
 export default {
-    baseRoot: 'localhost:xxxx'
-}
+  baseRoot: 'http://au.local/umbraco'
+};

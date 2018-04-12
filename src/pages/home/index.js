@@ -1,65 +1,113 @@
+//@flow
 import React from 'react';
+import _ from 'lodash';
 
-class Home extends React.PureComponent {
-
-    state = {
-        isLoading: true,
-        pageData: {}
-    };
-
-
-    componentDidMount() {
-        // making call to umbraco Rest api 
-        
-    };
-
-    componentWillUnmount() {
-        // keep track if component has been unmounted
-        this.isMounted = false;
-    }
-
-    render() {
-        return (
-            <div id="main-container">
-                <div id="main" class="wrapper clearfix">
-                    
-                    <article>
-                        <section>
-                            <h2>ArticleTitle 1</h2>
-                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent nisl magna, tristique sollicitudin nibh sed, sodales pulvinar odio. 
-                                Morbi rhoncus aliquam tellus, vitae faucibus nulla scelerisque sed. Mauris quis porta risus. 
-                                Curabitur elementum placerat mi, quis feugiat ipsum rutrum sed. Vivamus ultricies dolor ac elementum pharetra.
-                                Sed pellentesque arcu vitae sem dapibus bibendum. Curabitur tincidunt hendrerit est, et iaculis magna feugiat vel.
-                                Vestibulum luctus metus in diam dictum tempus. Nunc facilisis erat et sem venenatis, id rutrum eros porta. 
-                                Vivamus a condimentum urna. Duis nec lorem et lorem vehicula imperdiet. 
-                                Quisque ac mauris ac leo egestas hendrerit et et leo. 
-                                Proin convallis tempus dictum. Fusce lorem libero, blandit vitae placerat id, viverra non ex.
-                            </p>
-                        </section>
-                        <section>
-                            <h2>ArticleTitle 2</h2>
-                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent nisl magna, tristique sollicitudin nibh sed, sodales pulvinar odio. 
-                                Morbi rhoncus aliquam tellus, vitae faucibus nulla scelerisque sed. Mauris quis porta risus. 
-                                Curabitur elementum placerat mi, quis feugiat ipsum rutrum sed. Vivamus ultricies dolor ac elementum pharetra.
-                                Sed pellentesque arcu vitae sem dapibus bibendum. Curabitur tincidunt hendrerit est, et iaculis magna feugiat vel.
-                                Vestibulum luctus metus in diam dictum tempus. Nunc facilisis erat et sem venenatis, id rutrum eros porta. 
-                                Vivamus a condimentum urna. Duis nec lorem et lorem vehicula imperdiet. 
-                                Quisque ac mauris ac leo egestas hendrerit et et leo. 
-                                Proin convallis tempus dictum. Fusce lorem libero, blandit vitae placerat id, viverra non ex.
-                            </p>
-                        </section>
-                    </article>
-    
-                    
-                    <aside>
-                        <h3>Aside Title</h3>
-                        <p>Aside Title Text</p>
-                    </aside>
-                    
-                </div>
-            </div>
-        );
-    }
+import Header from '../../components/header';
+import ContentApi from '../../api/contentApi';
+type State = {
+  isLoading: boolean,
+  isErrorLoading: boolean,
+  content: any
 };
+
+class Home extends React.PureComponent<void, State> {
+  state = {
+    isLoading: true,
+    isErrorLoading: false,
+    content: {}
+  };
+
+  isComponentMounted = true;
+
+  componentDidMount = async () => {
+    // making call to umbraco Rest api
+    try {
+      const response = await ContentApi.home.getFullContent();
+      if (
+        _.has(response.data, '_embedded.content') &&
+        _.isArray(response.data._embedded.content)
+      ) {
+        if (this.isComponentMounted) {
+          this.setState({
+            isLoading: false,
+            content: response.data._embedded.content
+          });
+        }
+      }
+    } catch (error) {
+      if (this.isComponentMounted) {
+        this.setState({
+          isLoading: false,
+          isErrorLoading: true
+        });
+        // TODO: Handle Error
+      }
+    }
+  };
+
+  componentWillUnmount() {
+    // keep track if component has been unmounted
+    this.isComponentMounted = false;
+  }
+
+  createMarkup = (stringMarkup: string) => {
+    return { __html: stringMarkup };
+  };
+
+  render() {
+    if (this.state.isLoading) {
+      return (
+        <div>
+          <h1>Loading...</h1>
+        </div>
+      );
+    }
+
+    if (this.state.isErrorLoading) {
+      return (
+        <div className="alert alert-danger">
+          <strong>Error occured </strong>
+        </div>
+      );
+    }
+    const properties = this.state.content[0].properties;
+    return (
+      <div>
+        <Header pageTitle={properties.pageTitle} />
+        <div id="main-container">
+          <div id="main" className="wrapper clearfix">
+            <article>
+              <section>
+                <h2>{properties.articleTitle1}</h2>
+                <p
+                  dangerouslySetInnerHTML={this.createMarkup(
+                    properties.articleBodyText1
+                  )}
+                />
+              </section>
+              <section>
+                <h2>{properties.articleTitle2}</h2>
+                <p
+                  dangerouslySetInnerHTML={this.createMarkup(
+                    properties.articleBodyText2
+                  )}
+                />
+              </section>
+            </article>
+
+            <aside>
+              <h3>{properties.asideTitle}</h3>
+              <div
+                dangerouslySetInnerHTML={this.createMarkup(
+                  properties.asideText
+                )}
+              />
+            </aside>
+          </div>
+        </div>
+      </div>
+    );
+  }
+}
 
 export default Home;

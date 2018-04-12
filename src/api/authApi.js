@@ -1,9 +1,18 @@
 import APIUtil from './apiUtil';
+import qs from 'qs';
 
 const api = new APIUtil();
 
-class AuthorizationApi {
-    getHomePageContent() {
-        api.get()
-    }
-}
+const AuthApi = {
+  signIn(email, password) {
+    const payload = {
+      username: email,
+      password,
+      grant_type: 'password'
+    };
+
+    return api.post('oauth/token', qs.stringify(payload));
+  }
+};
+
+export default AuthApi;
