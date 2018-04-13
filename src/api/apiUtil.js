@@ -5,7 +5,7 @@ import appConfig from '../config';
 // Add a request interceptor
 axios.interceptors.request.use(
   function(config) {
-    // adding token to the authorization header
+    // adding token to the authorization header only
     if (config.url.includes('http://au.local/umbraco/oauth/token')) {
       return config;
     }
